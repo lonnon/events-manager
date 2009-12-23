@@ -121,7 +121,6 @@ add_filter('dbem_notes_map', 'js_escape');
 function dbem_install() {
    // Creates the events table if necessary
   dbem_create_events_table();
-  dbem_create_events_posts_table();
   dbem_create_recurrence_table();  
   dbem_create_locations_table();
   dbem_create_bookings_table();
