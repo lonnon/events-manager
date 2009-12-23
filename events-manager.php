@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 // Setting constants
 define('EVENTS_TBNAME','dbem_events'); //TABLE NAME
+define('EVENTS_POSTS_TBNAME','dbem_events_posts'); //TABLE NAME
 define('RECURRENCE_TBNAME','dbem_recurrence'); //TABLE NAME   
 define('LOCATIONS_TBNAME','dbem_locations'); //TABLE NAME  
 define('BOOKINGS_TBNAME','dbem_bookings'); //TABLE NAME
@@ -238,6 +239,20 @@ function dbem_create_events_table() {
     // Fix buggy columns
     $wpdb->query("ALTER TABLE $table_name MODIFY event_notes text ;");
     $wpdb->query("ALTER TABLE $table_name MODIFY event_author mediumint(9);");
+  }
+}
+
+function dbem_create_events_posts_table() {
+  global $wpdb, $user_level;
+  $table_name = $wpdb->prefix.EVENTS_POSTS_TBNAME;
+  
+  if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+    $sql = "CREATE TABLE ".$table_name." (
+      event_id mediumint(9) NOT NULL,
+      post_id bigint(20) unsigned NOT NULL
+      );";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
   }
 }
 
