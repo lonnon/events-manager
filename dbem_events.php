@@ -1465,6 +1465,14 @@ function dbem_event_form($event, $title, $element) {
       _e ( 'The event name. Example: Birthday party', 'dbem' )?>
               </div>
             </div>
+            <div id="event_program" class="stuffbox">
+              <h3>Program</h3>
+              <div class="inside">
+                <?php
+                  dbem_options_select ( __ ( '' ), 'event_program', dbem_get_all_pages (), __ ( 'The program to be performed at this event' ) );
+                ?>
+              </div>
+            </div>
             <div id="event_start_date" class="stuffbox">
               <h3 id='event-date-title'>
                 <?php
