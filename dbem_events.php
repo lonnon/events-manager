@@ -1471,9 +1471,22 @@ function dbem_event_form($event, $title, $element) {
             <div id="event_program_id" class="stuffbox">
               <h3>Program</h3>
               <div class="inside">
-                <?php
-                  dbem_options_select ( __ ( '' ), 'event_program_id', dbem_get_all_pages (), __ ( 'The program to be performed at this event' ) );
-                ?>
+                <select name="event_program_id">
+                  <option value="">Select...</option>
+                  <?php
+                    $programs = dbem_get_all_pages();
+                    foreach ($programs as $id => $name) {
+                      $selected = $id == $event['event_program_id'] ? "selected='selected'" : '';
+                  ?>
+                    <option value="<?php echo $id; ?>" <?php echo $selected ?>>
+                      <?php echo $name?>
+                    </option>
+                  <?php
+                    }
+                  ?>
+                </select>
+                <br />
+                The program to be performed at this event
               </div>
             </div>
             <div id="event_start_date" class="stuffbox">
