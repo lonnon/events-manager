@@ -63,6 +63,7 @@ function dbem_events_subpanel() {
     //$event['event_end_time'] = $_POST[event_end_hh].":".$_POST[event_end_mm].":00";         
     $event ['event_start_time'] = date ( "G:i:00", strtotime ( $_POST ['event_start_time'] ) );
     $event ['event_end_time'] = date ( "G:i:00", strtotime ( $_POST ['event_end_time'] ) );
+    $event ['event_program_id'] = $_POST ['event_program_id'];
     $recurrence ['recurrence_name'] = $event ['event_name'];
     $recurrence ['recurrence_start_date'] = $event ['event_start_date'];
     $recurrence ['recurrence_end_date'] = $event ['event_end_date'];
@@ -881,7 +882,8 @@ function dbem_get_event($event_id) {
           recurrence_id, 
           location_id,
           event_contactperson_id,
-          event_attributes
+          event_attributes,
+          event_program_id
         FROM $events_table   
           WHERE event_id = $event_id";
   
@@ -1465,11 +1467,11 @@ function dbem_event_form($event, $title, $element) {
       _e ( 'The event name. Example: Birthday party', 'dbem' )?>
               </div>
             </div>
-            <div id="event_program" class="stuffbox">
+            <div id="event_program_id" class="stuffbox">
               <h3>Program</h3>
               <div class="inside">
                 <?php
-                  dbem_options_select ( __ ( '' ), 'event_program', dbem_get_all_pages (), __ ( 'The program to be performed at this event' ) );
+                  dbem_options_select ( __ ( '' ), 'event_program_id', dbem_get_all_pages (), __ ( 'The program to be performed at this event' ) );
                 ?>
               </div>
             </div>

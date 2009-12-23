@@ -192,8 +192,9 @@ function dbem_create_events_table() {
       event_contactperson_id mediumint(9) NULL,  
       location_id mediumint(9) NOT NULL,
       recurrence_id mediumint(9) NULL,
-        event_category_id int(11) default NULL,
-        event_attributes text NULL, 
+      event_category_id int(11) default NULL,
+      event_attributes text NULL,
+      event_program_id bigint(20) unsigned NOT NULL,
       UNIQUE KEY (event_id)
       );";
     /* Marcus End Edit */
@@ -234,25 +235,12 @@ function dbem_create_events_table() {
     maybe_add_column($table_name, 'location_id', "alter table $table_name add location_id mediumint(9) NOT NULL;");    
     maybe_add_column($table_name, 'recurrence_id', "alter table $table_name add recurrence_id mediumint(9) NULL;"); 
     maybe_add_column($table_name, 'event_contactperson_id', "alter table $table_name add event_contactperson_id mediumint(9) NULL;");
-    maybe_add_column($table_name, 'event_attributes', "alter table $table_name add event_attributes text NULL;"); 
+    maybe_add_column($table_name, 'event_attributes', "alter table $table_name add event_attributes text NULL;");
+    maybe_add_column($table_name, 'event_program_id', "alter table $table_name add event_program_id bigint(20) unsigned NOT NULL;");
     
     // Fix buggy columns
     $wpdb->query("ALTER TABLE $table_name MODIFY event_notes text ;");
     $wpdb->query("ALTER TABLE $table_name MODIFY event_author mediumint(9);");
-  }
-}
-
-function dbem_create_events_posts_table() {
-  global $wpdb, $user_level;
-  $table_name = $wpdb->prefix.EVENTS_POSTS_TBNAME;
-  
-  if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-    $sql = "CREATE TABLE ".$table_name." (
-      event_id mediumint(9) NOT NULL,
-      post_id bigint(20) unsigned NOT NULL
-      );";
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
   }
 }
 
