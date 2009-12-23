@@ -194,7 +194,7 @@ function dbem_create_events_table() {
       recurrence_id mediumint(9) NULL,
       event_category_id int(11) default NULL,
       event_attributes text NULL,
-      event_program_id bigint(20) unsigned NOT NULL,
+      event_program_id bigint(20) unsigned,
       UNIQUE KEY (event_id)
       );";
     /* Marcus End Edit */
@@ -236,7 +236,7 @@ function dbem_create_events_table() {
     maybe_add_column($table_name, 'recurrence_id', "alter table $table_name add recurrence_id mediumint(9) NULL;"); 
     maybe_add_column($table_name, 'event_contactperson_id', "alter table $table_name add event_contactperson_id mediumint(9) NULL;");
     maybe_add_column($table_name, 'event_attributes', "alter table $table_name add event_attributes text NULL;");
-    maybe_add_column($table_name, 'event_program_id', "alter table $table_name add event_program_id bigint(20) unsigned NOT NULL;");
+    maybe_add_column($table_name, 'event_program_id', "alter table $table_name add event_program_id bigint(20) unsigned;");
     
     // Fix buggy columns
     $wpdb->query("ALTER TABLE $table_name MODIFY event_notes text ;");
