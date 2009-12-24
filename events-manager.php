@@ -520,6 +520,12 @@ function dbem_replace_placeholders($format, $event, $target="html") {
         $event_string = str_replace($result, $map_div , $event_string ); 
      
     }
+    
+    if (preg_match('/#_PROGRAM/', $result)) {
+      $program = dbem_get_program_link($event);
+      $event_string = str_replace($result, $program, $event_string);
+    }
+    
     if (preg_match('/#_ADDBOOKINGFORM/', $result)) {
        $rsvp_is_active = get_option('dbem_gmap_is_active'); 
       if ($event['event_rsvp']) {

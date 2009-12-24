@@ -716,6 +716,13 @@ function dbem_get_events_page_shortcode($atts) {
 }
 add_shortcode ( 'events_page', 'dbem_get_events_page_shortcode' );
 
+function dbem_get_program_link($event) {
+  $link = get_page_link($event['event_program_id']);
+  $title = get_the_title($event['event_program_id']);
+  $result = "<a href='$link' title='$title'>$title</a>";
+  return $result;
+}
+
 function dbem_are_events_available($scope = "future") {
   if ($scope == "")
     $scope = "future";
