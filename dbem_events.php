@@ -1071,7 +1071,7 @@ function dbem_events_table($events, $limit, $title) {
       ?>"><?php
       echo ($event ['event_name']);
       ?></a></strong>
-      <?
+      <?php
       $category = dbem_get_category($event ['event_id']);
       if($category)
         echo "<br/><span title='".__ ( 'Category', 'dbem' ).": ".$category['category_name']."'>".$category['category_name']."</span>";
@@ -1446,7 +1446,7 @@ function dbem_event_form($event, $title, $element) {
                     <option value="<?php echo $category['category_id'] ?>" <?php echo $selected ?>>
                     <?php echo $category['category_name'] ?>
                     </option>
-                    <?
+                    <?php
               }
             ?>
                   </select>
