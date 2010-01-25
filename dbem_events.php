@@ -717,9 +717,13 @@ function dbem_get_events_page_shortcode($atts) {
 add_shortcode ( 'events_page', 'dbem_get_events_page_shortcode' );
 
 function dbem_get_program_link($event) {
-  $link = get_page_link($event['event_program_id']);
-  $title = get_the_title($event['event_program_id']);
-  $result = "<a href='$link' title='$title'>$title</a>";
+  if ($event['event_program_id']) {
+    $link = get_page_link($event['event_program_id']);
+    $title = get_the_title($event['event_program_id']);
+    $result = "<a href='$link' title='$title'>$title</a>";
+  } else {
+    $result = "";
+  }
   return $result;
 }
 
@@ -1071,7 +1075,7 @@ function dbem_events_table($events, $limit, $title) {
       ?>"><?php
       echo ($event ['event_name']);
       ?></a></strong>
-      <?
+      <?php
       $category = dbem_get_category($event ['event_id']);
       if($category)
         echo "<br/><span title='".__ ( 'Category', 'dbem' ).": ".$category['category_name']."'>".$category['category_name']."</span>";
@@ -1446,7 +1450,7 @@ function dbem_event_form($event, $title, $element) {
                     <option value="<?php echo $category['category_id'] ?>" <?php echo $selected ?>>
                     <?php echo $category['category_name'] ?>
                     </option>
-                    <?
+                    <?php
               }
             ?>
                   </select>
