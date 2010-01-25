@@ -722,7 +722,7 @@ function dbem_get_program_link($event) {
     $title = get_the_title($event['event_program_id']);
     $result = "<a href='$link' title='$title'>$title</a>";
   } else {
-    $result = "";
+    $result = "Program to be announced";
   }
   return $result;
 }
