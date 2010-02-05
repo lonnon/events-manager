@@ -521,13 +521,13 @@ function dbem_replace_placeholders($format, $event, $target="html") {
      
     }
     
-    if (preg_match('/#_PROGRAM/', $result)) {
-      $program = dbem_get_program_link($event);
+    if (preg_match('/#_NOLINKPROGRAM/', $result)) {
+      $program = dbem_get_program_link($event, false);
       $event_string = str_replace($result, $program, $event_string);
     }
     
-    if (preg_match('/#_NO_LINK_PROGRAM', $result)) {
-      $program = dbem_get_program_link($event, false);
+    if (preg_match('/#_PROGRAM/', $result)) {
+      $program = dbem_get_program_link($event);
       $event_string = str_replace($result, $program, $event_string);
     }
     
