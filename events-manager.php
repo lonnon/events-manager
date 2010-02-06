@@ -646,8 +646,18 @@ function dbem_replace_placeholders($format, $event, $target="html") {
         $field_value = apply_filters('dbem_general_rss', $field_value); 
       
       $event_string = str_replace($result, $field_value , $event_string ); 
-     }
-     if (preg_match('/#_CONTACTNAME$/', $result)) {
+    }
+    
+    if (preg_match('/#_CONTACT$/', $result)) {
+      $contact = '';
+      if ($event['event_attributes']['contact']) {
+        $contact  = "Contact: ". $event['event_attributes']['contact'];
+        $contact .= "<br />Please RSVP with this contact to attend this program.";
+      }
+      $event_string = str_replace($result, $contact, $event_string);
+    }
+    
+    if (preg_match('/#_CONTACTNAME$/', $result)) {
           $event['event_contactperson_id'] ? $user_id = $event['event_contactperson_id'] : $user_id = get_option('dbem_default_contact_person');
       $name = dbem_get_user_name($user_id);
       $event_string = str_replace($result, $name, $event_string );
