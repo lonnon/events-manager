@@ -136,3 +136,12 @@ table.fullcalendar td {
 	font-size: 80%;     
 	list-style: none;
 }
+
+body.events_page_new_event #side-info-column,
+body.events_page_new_event #localised-end-date,
+body.events_page_new_event #end-time,
+body.toplevel_page_events-manager-events-manager #side-info-column,
+body.toplevel_page_events-manager-events-manager #localised-end-date,
+body.toplevel_page_events-manager-events-manager #end-time {
+  display: none !important;
+}
