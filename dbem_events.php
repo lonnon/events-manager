@@ -629,10 +629,10 @@ add_action ( 'admin_print_scripts', 'dbem_admin_css' );
 // exposed function, for theme  makers
 /* Marcus Begin Edit */
   //Added a category option to the get events list method and shortcode
-function dbem_get_events_list($limit = "3", $scope = "future", $order = "ASC", $format = '', $echo = 1, $category = '') {
+function dbem_get_events_list($limit = "3", $scope = "future", $order = "ASC", $format = '', $echo = 1, $category = '', $program_id ='') {
   if (strpos ( $limit, "=" )) {
     // allows the use of arguments without breaking the legacy code
-    $defaults = array ('limit' => 3, 'scope' => 'future', 'order' => 'ASC', 'format' => '', 'echo' => 1 , 'category' => '');
+    $defaults = array ('limit' => 3, 'scope' => 'future', 'order' => 'ASC', 'format' => '', 'echo' => 1 , 'category' => '', $program_id = '');
     
     $r = wp_parse_args ( $limit, $defaults );
     extract ( $r, EXTR_SKIP );
@@ -642,6 +642,7 @@ function dbem_get_events_list($limit = "3", $scope = "future", $order = "ASC", $
     $format = $r ['format'];
     $echo = $r ['echo'];
     $category = ( preg_match('/^([0-9],?)+$/', $r ['category'] ) ) ? $r ['category'] : '' ;
+    $program_id = $r ['program_id'];
   }
   if ($scope == "")
     $scope = "future";
@@ -651,7 +652,7 @@ function dbem_get_events_list($limit = "3", $scope = "future", $order = "ASC", $
     $orig_format = true;
     $format = get_option ( 'dbem_event_list_item_format' );
   }
-  $events = dbem_get_events ( $limit, $scope, $order, '', '', $category );
+  $events = dbem_get_events ( $limit, $scope, $order, '', '', $category, $program_id );
   $output = "";
   if (! empty ( $events )) {
     foreach ( $events as $event ) {
@@ -759,7 +760,7 @@ function dbem_is_multiple_events_page() {
 // main function querying the database event table
 /* Marcus Begin Edit */
   //Added extra method option for cateogry
-function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset = "", $location_id = "", $category = '') {
+function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset = "", $location_id = "", $category = '', $program_id = "") {
 /* Marcus End Edit */
   global $wpdb;
   
@@ -812,6 +813,9 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
     $conditions [] = "(".implode(' OR', $category_conditions).")";
   }
   /* Marcus End Edit */
+  
+  if ($program_id != "")
+    $conditions [] = " event_program_id = $program_id";
   
   $where = implode ( " AND ", $conditions );
   if ($where != "")
