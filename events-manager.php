@@ -651,8 +651,7 @@ function dbem_replace_placeholders($format, $event, $target="html") {
     if (preg_match('/#_CONTACT$/', $result)) {
       $contact = '';
       if ($event['event_attributes']['contact']) {
-        $contact  = "Contact: ". $event['event_attributes']['contact'];
-        $contact .= "<br />Please RSVP with this contact to attend this program.";
+        $contact  = $event['event_attributes']['contact'];
       }
       $event_string = str_replace($result, $contact, $event_string);
     }
