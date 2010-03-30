@@ -194,6 +194,9 @@ function dbem_create_events_table() {
       event_category_id int(11) default NULL,
       event_attributes text NULL,
       event_program_id bigint(20) unsigned,
+      event_contact tinytext NULL,
+      event_pay tinytext NULL,
+      event_personal_notes text NULL,
       UNIQUE KEY (event_id)
       );";
     /* Marcus End Edit */
@@ -236,6 +239,9 @@ function dbem_create_events_table() {
     maybe_add_column($table_name, 'event_contactperson_id', "alter table $table_name add event_contactperson_id mediumint(9) NULL;");
     maybe_add_column($table_name, 'event_attributes', "alter table $table_name add event_attributes text NULL;");
     maybe_add_column($table_name, 'event_program_id', "alter table $table_name add event_program_id bigint(20) unsigned;");
+    maybe_add_column($table_name, 'event_contact', "alter table $table_name add event_contact tinytext NULL;");
+    maybe_add_column($table_name, 'event_pay', "alter table $table_name add event_pay tinytext NULL;");
+    maybe_add_column($table_name, 'event_personal_notes', "alter table $table_name add event_personal_notes text NULL;");
     
     // Fix buggy columns
     $wpdb->query("ALTER TABLE $table_name MODIFY event_notes text ;");
@@ -531,6 +537,14 @@ function dbem_replace_placeholders($format, $event, $target="html") {
       $event_string = str_replace($result, $program, $event_string);
     }
     
+    if (preg_match('/#_CONTACT$/', $result)) {
+      $contact = '';
+      if ($event['event_contact']) {
+        $contact  = $event['event_contact'];
+      }
+      $event_string = str_replace($result, $contact, $event_string);
+    }
+    
     if (preg_match('/#_ADDBOOKINGFORM/', $result)) {
        $rsvp_is_active = get_option('dbem_gmap_is_active'); 
       if ($event['event_rsvp']) {
@@ -646,14 +660,6 @@ function dbem_replace_placeholders($format, $event, $target="html") {
         $field_value = apply_filters('dbem_general_rss', $field_value); 
       
       $event_string = str_replace($result, $field_value , $event_string ); 
-    }
-    
-    if (preg_match('/#_CONTACT$/', $result)) {
-      $contact = '';
-      if ($event['event_attributes']['contact']) {
-        $contact  = $event['event_attributes']['contact'];
-      }
-      $event_string = str_replace($result, $contact, $event_string);
     }
     
     if (preg_match('/#_CONTACTNAME$/', $result)) {

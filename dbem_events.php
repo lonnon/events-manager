@@ -64,6 +64,9 @@ function dbem_events_subpanel() {
     $event ['event_start_time'] = date ( "G:i:00", strtotime ( $_POST ['event_start_time'] ) );
     $event ['event_end_time'] = date ( "G:i:00", strtotime ( $_POST ['event_end_time'] ) );
     $event ['event_program_id'] = $_POST ['event_program_id'];
+    $event ['event_contact'] = $_POST ['event_contact'];
+    $event ['event_pay'] = $_POST ['event_pay'];
+    $event ['event_personal_notes'] = $_POST ['event_personal_notes'];
     $recurrence ['recurrence_name'] = $event ['event_name'];
     $recurrence ['recurrence_start_date'] = $event ['event_start_date'];
     $recurrence ['recurrence_end_date'] = $event ['event_end_date'];
@@ -841,7 +844,10 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
         location_id, 
         event_contactperson_id,
         event_attributes,
-        event_program_id
+        event_program_id,
+        event_contact,
+        event_pay,
+        event_personal_notes
         FROM $events_table   
         $where
         ORDER BY event_start_date $order , event_start_time $order
@@ -903,7 +909,10 @@ function dbem_get_event($event_id) {
           location_id,
           event_contactperson_id,
           event_attributes,
-          event_program_id
+          event_program_id,
+          event_contact,
+          event_pay,
+          event_personal_notes
         FROM $events_table   
           WHERE event_id = $event_id";
   
@@ -1698,6 +1707,30 @@ function dbem_event_form($event, $title, $element) {
               </div>
             </div>
             <?php/* Marcus End Edit */ ?>
+          
+            <div id="event_contact" class="stuffbox">
+              <h3>Contact</h3>
+              <div class="inside">
+                <input type="text" name="event_contact" value="<?php echo $event['event_contact']; ?>" />
+                <br />
+                Contact name and phone (or email address) for events that require asking permission to attend. Example: Joe Friday 206-555-1212."
+              </div>
+            </div>
+            
+            <div id="archival_information" class="stuffbox">
+              <h3>Archival Information</h3>
+              <div class="inside">
+                <p>
+                  <label for="event_pay">Pay:</label>
+                  <input type="text" name="event_pay" value="<?php echo $event['event_pay']; ?>" />
+                </p>
+                <p>
+                  <label for="event_personal_notes">Notes:</label>
+                  <textarea name="event_personal_notes"><?php echo $event['event_personal_notes']; ?></textarea>
+                </p>
+              </div>
+            </div>
+            
           </div>
           <p class="submit">
             <input type="submit" name="events_update"
