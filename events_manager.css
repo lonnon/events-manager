@@ -146,3 +146,13 @@ body.toplevel_page_events-manager-events-manager #end-time,
 #event_attributes {
   display: none !important;
 }
+
+#event_name input,
+#event_contact input,
+#archival_information textarea {
+  width: 550px;
+}
+
+#archival_information textarea {
+  height: 200px;
+}
