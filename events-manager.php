@@ -194,6 +194,7 @@ function dbem_create_events_table() {
       event_category_id int(11) default NULL,
       event_attributes text NULL,
       event_program_id bigint(20) unsigned,
+      event_custom_program text NULL,
       event_contact tinytext NULL,
       event_pay tinytext NULL,
       event_personal_notes text NULL,
