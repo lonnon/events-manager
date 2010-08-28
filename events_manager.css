@@ -156,3 +156,8 @@ body.toplevel_page_events-manager-events-manager #end-time,
 #archival_information textarea {
   height: 200px;
 }
+
+#event_program_id select,
+#event_program_id textarea {
+  width: 100%;
+}
