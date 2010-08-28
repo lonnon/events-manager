@@ -64,6 +64,7 @@ function dbem_events_subpanel() {
     $event ['event_start_time'] = date ( "G:i:00", strtotime ( $_POST ['event_start_time'] ) );
     $event ['event_end_time'] = date ( "G:i:00", strtotime ( $_POST ['event_end_time'] ) );
     $event ['event_program_id'] = $_POST ['event_program_id'];
+    $event ['event_custom_program'] = $_POST ['event_custom_program'];
     $event ['event_contact'] = $_POST ['event_contact'];
     $event ['event_pay'] = $_POST ['event_pay'];
     $event ['event_personal_notes'] = $_POST ['event_personal_notes'];
@@ -729,6 +730,8 @@ function dbem_get_program_link($event, $with_link = true) {
     } else {
       $result = $title;
     }
+  } else if ($event['event_custom_program']) {
+    $result = $event['event_custom_program'];
   } else {
     $result = "Program to be announced";
   }
@@ -845,6 +848,7 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
         event_contactperson_id,
         event_attributes,
         event_program_id,
+        event_custom_program,
         event_contact,
         event_pay,
         event_personal_notes
@@ -910,6 +914,7 @@ function dbem_get_event($event_id) {
           event_contactperson_id,
           event_attributes,
           event_program_id,
+          event_custom_program,
           event_contact,
           event_pay,
           event_personal_notes
@@ -1501,7 +1506,7 @@ function dbem_event_form($event, $title, $element) {
               <div class="inside">
                 <p>
                   <select name="event_program_id">
-                    <option value="">Select...</option>
+                    <option value="">Custom Program Text</option>
                     <?php
                       $programs = dbem_get_all_pages();
                       foreach ($programs as $id => $name) {
