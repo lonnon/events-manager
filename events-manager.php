@@ -239,6 +239,7 @@ function dbem_create_events_table() {
     maybe_add_column($table_name, 'event_contactperson_id', "alter table $table_name add event_contactperson_id mediumint(9) NULL;");
     maybe_add_column($table_name, 'event_attributes', "alter table $table_name add event_attributes text NULL;");
     maybe_add_column($table_name, 'event_program_id', "alter table $table_name add event_program_id bigint(20) unsigned;");
+    maybe_add_column($table_name, 'event_custom_program', "alter table $table_name add event_custom_program text NULL;");
     maybe_add_column($table_name, 'event_contact', "alter table $table_name add event_contact tinytext NULL;");
     maybe_add_column($table_name, 'event_pay', "alter table $table_name add event_pay tinytext NULL;");
     maybe_add_column($table_name, 'event_personal_notes', "alter table $table_name add event_personal_notes text NULL;");
