@@ -64,10 +64,10 @@ function dbem_events_subpanel() {
     $event ['event_start_time'] = date ( "G:i:00", strtotime ( $_POST ['event_start_time'] ) );
     $event ['event_end_time'] = date ( "G:i:00", strtotime ( $_POST ['event_end_time'] ) );
     $event ['event_program_id'] = $_POST ['event_program_id'];
-    $event ['event_custom_program'] = $_POST ['event_custom_program'];
-    $event ['event_contact'] = $_POST ['event_contact'];
-    $event ['event_pay'] = $_POST ['event_pay'];
-    $event ['event_personal_notes'] = $_POST ['event_personal_notes'];
+    $event ['event_custom_program'] = stripslashes ( $_POST ['event_custom_program'] );
+    $event ['event_contact'] = stripslashes( $_POST ['event_contact'] );
+    $event ['event_pay'] = stripslashes( $_POST ['event_pay'] );
+    $event ['event_personal_notes'] = stripslashes( $_POST ['event_personal_notes'] );
     $recurrence ['recurrence_name'] = $event ['event_name'];
     $recurrence ['recurrence_start_date'] = $event ['event_start_date'];
     $recurrence ['recurrence_end_date'] = $event ['event_end_date'];
@@ -1506,7 +1506,7 @@ function dbem_event_form($event, $title, $element) {
               <div class="inside">
                 <p>
                   <select name="event_program_id">
-                    <option value="">Custom Program Text</option>
+                    <option value="">Custom Program</option>
                     <?php
                       $programs = dbem_get_all_pages();
                       foreach ($programs as $id => $name) {
@@ -1523,8 +1523,8 @@ function dbem_event_form($event, $title, $element) {
                   The program to be performed at this event, <strong>-OR-</strong>
                 </p>
                 <p>
-                  <label for="event_custom_program">Custom Program Text:</label><br />
-                  <textarea name="event_custom_program" id="event_custom_program" rows="5"></textarea>
+                  <label for="event_custom_program">Custom Program Title:</label><br />
+                  <input type="text" name="event_custom_program" id="event_custom_program" rows="5" value="<?php echo $event['event_custom_program'] ?>"/>
                 </p>
               </div>
             </div>

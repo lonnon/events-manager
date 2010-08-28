@@ -158,6 +158,6 @@ body.toplevel_page_events-manager-events-manager #end-time,
 }
 
 #event_program_id select,
-#event_program_id textarea {
+#event_program_id input {
   width: 100%;
 }
