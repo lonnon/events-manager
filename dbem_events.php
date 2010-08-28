@@ -1,7 +1,7 @@
 <?php
 
 function dbem_new_event_page() {
-  
+
   $title = __ ( "Insert New Event", 'dbem' );
   dbem_event_form ( $event, $title, $element );
 
@@ -17,50 +17,50 @@ function dbem_events_subpanel() {
   $offset = $_GET ['offset'];
   $order = $_GET ['order'];
   $selectedEvents = $_GET ['events'];
-  
+
   // Disable Hello to new user if requested
   if (isset ( $_GET ['disable_hello_to_user'] ) && $_GET ['disable_hello_to_user'] == 'true')
     update_option ( 'dbem_hello_to_user', 0 );
-  
+
   if ($order == "")
     $order = "ASC";
   if ($offset == "")
     $offset = "0";
   $event_table_name = $wpdb->prefix . EVENTS_TBNAME;
   // Debug code, to make sure I get the correct page
-  
+
 
   // DELETE action
   if ($action == 'deleteEvents') {
     //  $sql="DELETE FROM ".$event_table_name." WHERE event_id='"."$event_ID"."'";
-    
+
 
     // TODO eventual error if ID in non-existant
     //$wpdb->query($sql);
     foreach ( $selectedEvents as $event_ID ) {
       dbem_delete_event ( $event_ID );
     }
-    
+
     $events = dbem_get_events ( "", "future" );
     dbem_events_table ( $events, 10, "Future events" );
   }
   // UPDATE or CREATE action
   if ($action == 'update_event' || $action == 'update_recurrence') {
-    
+
     $event = array ();
     $location = array ();
     $event ['event_name'] = stripslashes ( $_POST ["event_name"] );
     // Set event end time to event time if not valid
     // if (!_dbem_is_date_valid($event['event_end_date']))
-    //   $event['event_end_date'] = $event['event-date'];  
+    //   $event['event_end_date'] = $event['event-date'];
     $event ['event_start_date'] = $_POST ["event_date"];
     $event ['event_end_date'] = $_POST ["event_end_date"];
     // Trying to fix Alex's trouble
-    if ($event ['event_end_date'] == '') 
-      $event['event_end_date'] = $event['event_start_date'];     
+    if ($event ['event_end_date'] == '')
+      $event['event_end_date'] = $event['event_start_date'];
     // End of Alex's fix
     //$event['event_start_time'] = $_POST[event_hh].":".$_POST[event_mm].":00";
-    //$event['event_end_time'] = $_POST[event_end_hh].":".$_POST[event_end_mm].":00";         
+    //$event['event_end_time'] = $_POST[event_end_hh].":".$_POST[event_end_mm].":00";
     $event ['event_start_time'] = date ( "G:i:00", strtotime ( $_POST ['event_start_time'] ) );
     $event ['event_end_time'] = date ( "G:i:00", strtotime ( $_POST ['event_end_time'] ) );
     $event ['event_program_id'] = $_POST ['event_program_id'];
@@ -77,19 +77,19 @@ function dbem_events_subpanel() {
     $recurrence ['recurrence_freq'] == 'weekly' ? $recurrence [recurrence_byday] = implode ( ",", $_POST ['recurrence_bydays'] ) : $recurrence ['recurrence_byday'] = $_POST [recurrence_byday];
     $_POST ['recurrence_interval'] == "" ? $recurrence ['recurrence_interval'] = 1 : $recurrence ['recurrence_interval'] = $_POST ['recurrence_interval'];
     $recurrence ['recurrence_byweekno'] = $_POST [recurrence_byweekno];
-    
+
     $event ['event_rsvp'] = (is_numeric($_POST ['event_rsvp'])) ? $_POST ['event_rsvp']:0;
     $event ['event_seats'] = (is_numeric($_POST ['event_seats'])) ? $_POST ['event_seats']:0;
-    
+
     if (isset ( $_POST ['event_contactperson_id'] ) && $_POST ['event_contactperson_id'] != '' && $_POST ['event_contactperson_id'] != '-1') {
-      
+
       $event ['event_contactperson_id'] = $_POST ['event_contactperson_id'];
       $recurrence ['event_contactperson_id'] = $_POST ['event_contactperson_id'];
     }
-    
+
     if (! _dbem_is_time_valid ( $event_end_time ))
       $event_end_time = $event_time;
-    
+
     $location ['location_name'] = $_POST [location_name];
     $location ['location_address'] = $_POST [location_address];
     $location ['location_town'] = $_POST [location_town];
@@ -103,7 +103,7 @@ function dbem_events_subpanel() {
     /* Marcus End Edit */
     $recurrence ['recurrence_notes'] = $event ['event_notes'];
     $validation_result = dbem_validate_event ( $event );
-    
+
     /* Marcus Begin Edit */
     $event_attributes = array();
     for($i=1 ; trim($_POST["mtm_{$i}_ref"])!='' ; $i++ ){
@@ -113,34 +113,34 @@ function dbem_events_subpanel() {
      }
      $event['event_attributes'] = serialize($event_attributes);
      /* Marcus End Edit */
-    
+
     if ($validation_result == "OK") {
-      // validation successful  
+      // validation successful
 
       $related_location = dbem_get_identical_location ( $location );
-      // print_r($related_location); 
+      // print_r($related_location);
       if ($related_location) {
         $event ['location_id'] = $related_location ['location_id'];
         $recurrence ['location_id'] = $related_location ['location_id'];
       } else {
-        
+
         $new_location = dbem_insert_location ( $location );
         $event ['location_id'] = $new_location ['location_id'];
         $recurrence ['location_id'] = $new_location ['location_id'];
         //print_r($new_location);
-      
+
 
       }
-      
+
       if (! $event_ID && ! $recurrence_ID) {
         // there isn't anything
         if ($_POST ['repeated_event']) {
-          
+
           //insert new recurrence
           dbem_insert_recurrent_event ( $event, $recurrence );
           $feedback_message = __ ( 'New recurrent event inserted!', 'dbem' );
         } else {
-          // INSERT new event 
+          // INSERT new event
           $wpdb->insert ( $event_table_name, $event );
           $feedback_message = __ ( 'New event successfully inserted!', 'dbem' );
         }
@@ -149,12 +149,12 @@ function dbem_events_subpanel() {
         if ($recurrence_ID) {
           // UPDATE old recurrence
           $recurrence ['recurrence_id'] = $recurrence_ID;
-          //print_r($recurrence); 
+          //print_r($recurrence);
           if (dbem_update_recurrence ( $recurrence ))
             $feedback_message = __ ( 'Recurrence updated!', 'dbem' );
           else
             $feedback_message = __ ( 'Something went wrong with the recurrence update...', 'dbem' );
-        
+
         } else {
           // UPDATE old event
           // unlink from recurrence in case it was generated by one
@@ -165,7 +165,7 @@ function dbem_events_subpanel() {
           $feedback_message = "'" . $event ['event_name'] . "' " . __ ( 'updated', 'dbem' ) . "!";
         }
       }
-      
+
       /* Marcus Begin Edit */
         //Save the category if selected
         if( is_numeric($_POST['event_category_id']) ){
@@ -173,21 +173,21 @@ function dbem_events_subpanel() {
           $wpdb->update ( $event_table_name, array("event_category_id" => $_POST['event_category_id']), array('event_id' => $insert_id) );
         }
       /* Marcus End Edit */
-      
-      //$wpdb->query($sql); 
+
+      //$wpdb->query($sql);
       echo "<div id='message' class='updated fade'>
             <p>$feedback_message</p>
             </div>";
       $events = dbem_get_events ( "", "future" );
       dbem_events_table ( $events, 10, "Future events" );
     } else {
-      // validation unsuccessful      
+      // validation unsuccessful
 
       echo "<div id='message' class='error '>
             <p>" . __ ( "Ach, there's a problem here:", "dbem" ) . " $validation_result</p>
             </div>";
       dbem_event_form ( $event, "Edit event $event_ID", $event_ID );
-    
+
     }
   }
   if ($action == 'edit_event') {
@@ -197,14 +197,14 @@ function dbem_events_subpanel() {
       $event = dbem_get_event ( $event_ID );
       $title = __ ( "Edit Event", 'dbem' ) . " '" . $event ['event_name'] . "'";
     }
-    
+
     //$event=$wpdb->get_row($sql, ARRAY_A);
     // Enter new events and updates old ones
     // DEBUG: echo"Nome: $event->event_name";
-    
+
 
     dbem_event_form ( $event, $title, $event_ID );
-  
+
   }
   /* Marcus Begin Edit */
     //Add duplicate event if requested
@@ -213,22 +213,22 @@ function dbem_events_subpanel() {
     }
   /* Marcus End Edit */
   if ($action == 'edit_recurrence') {
-    
+
     $event_ID = $_GET ['recurrence_id'];
     $recurrence = dbem_get_recurrence ( $event_ID );
     $title = __ ( "Reschedule", 'dbem' ) . " '" . $recurrence ['recurrence_name'] . "'";
     dbem_event_form ( $recurrence, $title, $event_ID );
-  
+
   }
-  
+
   if ($action == 'update_recurrence') {
     //print_r($recurrence);
   //die('update recurrence!');
   }
-  
+
   if ($action == "-1" || $action == "") {
     // No action, only showing the events list
-    
+
 
     switch ($scope) {
       case "past" :
@@ -243,9 +243,9 @@ function dbem_events_subpanel() {
     }
     $limit = 20;
     $events = dbem_get_events ( $limit, $scope, $order, $offset );
-    
+
     dbem_events_table ( $events, $limit, $title );
-  
+
   }
 
 }
@@ -264,7 +264,7 @@ function dbem_get_all_pages() {
 // Function composing the options subpanel
 function dbem_options_subpanel() {
   // dbem_options_register();
-  
+
 
   ?>
 <div class="wrap">
@@ -277,10 +277,10 @@ function dbem_options_subpanel() {
 <h3><?php
   _e ( 'Events page', 'dbem' );
   ?></h3>
-<table class="form-table">  
+<table class="form-table">
            <?php
   dbem_options_select ( __ ( 'Events page' ), 'dbem_events_page', dbem_get_all_pages (), __ ( 'This option allows you to select which page to use as an events page' ) );
-  dbem_options_radio_binary ( __ ( 'Show events page in lists?', 'dbem' ), 'dbem_list_events_page', __ ( 'Check this option if you want the events page to appear together with other pages in pages lists.', 'dbem' ) ); 
+  dbem_options_radio_binary ( __ ( 'Show events page in lists?', 'dbem' ), 'dbem_list_events_page', __ ( 'Check this option if you want the events page to appear together with other pages in pages lists.', 'dbem' ) );
   dbem_options_radio_binary ( __ ( 'Display calendar in events page?', 'dbem' ), 'dbem_display_calendar_in_events_page', __ ( 'This options allows to display the calendar in the events page, instead of the default list. It is recommended not to display both the calendar widget and a calendar page.' ) )?>
         </table>
 <h3><?php
@@ -297,18 +297,18 @@ function dbem_options_subpanel() {
   dbem_options_input_text ( __ ( 'Single event page title format', 'dbem' ), 'dbem_event_page_title_format', __ ( 'The format of a single event page title. Follow the previous formatting instructions.', 'dbem' ) );
   dbem_options_textarea ( __ ( 'Default single event format', 'dbem' ), 'dbem_single_event_format', __ ( 'The format of a single event page.<br/>Follow the previous formatting instructions. <br/>Use <code>#_MAP</code> to insert a map.<br/>Use <code>#_PROGRAM</code> to insert a link to the program that will be performed at this event. <code>#_NOLINKPROGRAM</code> produces the title of the program only, without a link.<br />Use <code>#_CONTACTNAME</code>, <code>#_CONTACTEMAIL</code>, <code>#_CONTACTPHONE</code> to insert respectively the name, e-mail address and phone number of the designated contact person. <br/>Use <code>#_ADDBOOKINGFORM</code> to insert a form to allow the user to respond to your events reserving one or more places (RSVP).<br/> Use <code>#_REMOVEBOOKINGFORM</code> to insert a form where users, inserting their name and e-mail address, can remove their bookings.', 'dbem' ) );
   dbem_options_input_text ( __ ( 'Events page title', 'dbem' ), 'dbem_events_page_title', __ ( 'The title on the multiple events page.', 'dbem' ) );
-  dbem_options_input_text ( __ ( 'No events message', 'dbem' ), 'dbem_no_events_message', __ ( 'The message displayed when no events are available.', 'dbem' ) );?>         
- 
-  </table>                      
+  dbem_options_input_text ( __ ( 'No events message', 'dbem' ), 'dbem_no_events_message', __ ( 'The message displayed when no events are available.', 'dbem' ) );?>
+
+  </table>
    <h3><?php _e ( 'Calendar format', 'dbem' ); ?></h3>
-  <table class="form-table">   
+  <table class="form-table">
 <?php
     dbem_options_input_text ( __ ( 'Small calendar title', 'dbem' ), 'dbem_small_calendar_event_title_format', __ ( 'The format of the title that appears whne hovering on an eventful calendar day.', 'dbem' ) );
-  dbem_options_input_text ( __ ( 'Small calendar title separator', 'dbem' ), 'dbem_small_calendar_event_title_separator', __ ( 'The separator appearing on the above title when more than one events are taking place on the same day.', 'dbem' ) );         
-    dbem_options_input_text ( __ ( 'Full calendar events format', 'dbem' ), 'dbem_full_calendar_event_format', __ ( 'The format of each event when displayed in the full calendar. Remember to include <code>li</code> tags before and after the event.', 'dbem' ) );        
+  dbem_options_input_text ( __ ( 'Small calendar title separator', 'dbem' ), 'dbem_small_calendar_event_title_separator', __ ( 'The separator appearing on the above title when more than one events are taking place on the same day.', 'dbem' ) );
+    dbem_options_input_text ( __ ( 'Full calendar events format', 'dbem' ), 'dbem_full_calendar_event_format', __ ( 'The format of each event when displayed in the full calendar. Remember to include <code>li</code> tags before and after the event.', 'dbem' ) );
 
   ?>
-  
+
       </table>
 
 <h3><?php
@@ -320,7 +320,7 @@ function dbem_options_subpanel() {
   dbem_options_textarea ( __ ( 'Default location baloon format', 'dbem' ), 'dbem_location_baloon_format', __ ( 'The format of of the text appearing in the baloon describing the location in the map.<br/>Insert one or more of the following placeholders: <code>#_NAME</code>, <code>#_ADDRESS</code>, <code>#_TOWN</code>, <code>#_DESCRIPTION</code> or <code>#_IMAGE</code>.', 'dbem' ) );
   dbem_options_textarea ( __ ( 'Default location event list format', 'dbem' ), 'dbem_location_event_list_item_format', __ ( 'The format of the events the list inserted in the location page through the <code>#_NEXTEVENTS</code>, <code>#_PASTEVENTS</code> and <code>#_ALLEVENTS</code> element. <br/> Follow the events formatting instructions', 'dbem' ) );
   dbem_options_textarea ( __ ( 'Default no events message', 'dbem' ), 'dbem_location_no_events_message', __ ( 'The message to be displayed in the list generated by <code>#_NEXTEVENTS</code>, <code>#_PASTEVENTS</code> and <code>#_ALLEVENTS</code> when no events are available.', 'dbem' ) );
-  
+
   ?>
         </table>
 
@@ -328,7 +328,7 @@ function dbem_options_subpanel() {
   _e ( 'RSS feed format', 'dbem' );
   ?></h3>
 <table class="form-table"><?php
-  
+
   dbem_options_input_text ( __ ( 'RSS main title', 'dbem' ), 'dbem_rss_main_title', __ ( 'The main title of your RSS events feed.', 'dbem' ) );
   dbem_options_input_text ( __ ( 'RSS main description', 'dbem' ), 'dbem_rss_main_description', __ ( 'The main description of your RSS events feed.', 'dbem' ) );
   dbem_options_input_text ( __ ( 'RSS title format', 'dbem' ), 'dbem_rss_title_format', __ ( 'The format of the title of each item in the events RSS feed.', 'dbem' ) );
@@ -339,11 +339,11 @@ function dbem_options_subpanel() {
 <h3><?php
   _e ( 'Maps and geotagging', 'dbem' );
   ?></h3>
-<table class='form-table'> 
+<table class='form-table'>
             <?php
   $gmap_is_active = get_option ( 'dbem_gmap_is_active' );
   ?>
-           
+
              <tr valign="top">
     <th scope="row"><?php
   _e ( 'Enable Google Maps integration?', 'dbem' );
@@ -369,9 +369,9 @@ function dbem_options_subpanel() {
   </tr>
            <?php
   dbem_options_input_text ( __ ( 'Google Maps API Key', 'dbem' ), 'dbem_gmap_key', sprintf ( __ ( "To display Google Maps you need a Google Maps API key. Don't worry, it's free, you can get one <a href='%s'>here</a>.", 'dbem' ), 'http://code.google.com/apis/maps/signup.html' ) );
-           
-   dbem_options_textarea ( __ ( 'Map text format', 'dbem' ), 'dbem_map_text_format', __ ( 'The format the text appearing in the event page map cloud.<br/>Follow the previous formatting instructions.', 'dbem' ) );     
-  ?> 
+
+   dbem_options_textarea ( __ ( 'Map text format', 'dbem' ), 'dbem_map_text_format', __ ( 'The format the text appearing in the event page map cloud.<br/>Follow the previous formatting instructions.', 'dbem' ) );
+  ?>
         </table>
 
 <h3><?php
@@ -393,9 +393,9 @@ function dbem_options_subpanel() {
   dbem_options_input_text ( __ ( 'SMTP username', 'dbem' ), 'dbem_smtp_username', __ ( "Insert the username to be used to access your SMTP server.", 'dbem' ) );
   dbem_options_input_password ( __ ( 'SMTP password', 'dbem' ), "dbem_smtp_password", __ ( "Insert the password to be used to access your SMTP server", 'dbem' ) );
   ?>
-         
-             
-         
+
+
+
           </table>
 
 <h3><?php
@@ -414,10 +414,10 @@ function dbem_options_subpanel() {
   name="Submit" value="<?php
   _e ( 'Save Changes' )?>" /></p>
 
-        
+
       <?php
   settings_fields ( 'dbem-options' );
-  ?> 
+  ?>
       </form>
 </div>
 <?php
@@ -428,12 +428,12 @@ function dbem_options_subpanel() {
 function dbem_events_page_content() {
   global $wpdb;
   if (isset ( $_REQUEST ['location_id'] ) && $_REQUEST ['location_id'] |= '') {
-    
+
     $location = dbem_get_location ( $_REQUEST ['location_id'] );
     $single_location_format = get_option ( 'dbem_single_location_format' );
     $page_body = dbem_replace_locations_placeholders ( $single_location_format, $location );
     return $page_body;
-  
+
   }
   if (isset ( $_REQUEST ['event_id'] ) && $_REQUEST ['event_id'] != '') {
     // single event page
@@ -445,9 +445,9 @@ function dbem_events_page_content() {
   } elseif (isset ( $_REQUEST ['calendar_day'] ) && $_REQUEST ['calendar_day'] != '') {
     $date = $_REQUEST ['calendar_day'];
     $events_N = dbem_events_count_for ( $date );
-    // $_GET['scope'] ? $scope = $_GET['scope']: $scope =  "future";   
+    // $_GET['scope'] ? $scope = $_GET['scope']: $scope =  "future";
     // $stored_format = get_option('dbem_event_list_item_format');
-    // $events_body  =  dbem_get_events_list(10, $scope, "ASC", $stored_format, $false);  
+    // $events_body  =  dbem_get_events_list(10, $scope, "ASC", $stored_format, $false);
     if ($events_N > 1) {
       $_GET ['calendar_day'] ? $scope = $_GET ['calendar_day'] : $scope = "future";
       $stored_format = get_option ( 'dbem_event_list_item_format' );
@@ -479,7 +479,7 @@ function dbem_events_page_content() {
       $events_body = $single_event_format_header . dbem_get_events_list ( 10, $scope, "ASC", $stored_format, $false ) . $single_event_format_footer;
     }
     return $events_body;
-  
+
   }
 }
 function dbem_events_count_for($date) {
@@ -491,10 +491,10 @@ function dbem_events_count_for($date) {
 
 // filter function to call the event page when appropriate
 function dbem_filter_events_page($data) {
-  
+
   // $table_name = $wpdb->prefix .EVENTS_TBNAME;
   //   $start = strpos($data, DBEM_PAGE);
-  
+
 
   $is_events_post = (get_the_ID () == get_option ( 'dbem_events_page' ));
   $events_page_id = get_option ( 'dbem_events_page' );
@@ -510,13 +510,13 @@ function dbem_events_page_title($data) {
   $events_page_id = get_option ( 'dbem_events_page' );
   $events_page = get_page ( $events_page_id );
   $events_page_title = $events_page->post_title;
-  
+
   if (($data == $events_page_title) && (is_page ( $events_page_id ))) {
     if (isset ( $_REQUEST ['calendar_day'] ) && $_REQUEST ['calendar_day'] != '') {
-      
+
       $date = $_REQUEST ['calendar_day'];
       $events_N = dbem_events_count_for ( $date );
-      
+
       if ($events_N == 1) {
         $events = dbem_get_events ( "", $_REQUEST ['calendar_day'] );
         $event = $events [0];
@@ -524,9 +524,9 @@ function dbem_events_page_title($data) {
         $page_title = dbem_replace_placeholders ( $stored_page_title_format, $event );
         return $page_title;
       }
-    
+
     }
-    
+
     if (isset ( $_REQUEST ['location_id'] ) && $_REQUEST ['location_id'] |= '') {
       $location = dbem_get_location ( $_REQUEST ['location_id'] );
       $stored_page_title_format = get_option ( 'dbem_location_page_title_format' );
@@ -544,9 +544,9 @@ function dbem_events_page_title($data) {
       // Multiple events page
       $page_title = get_option ( 'dbem_events_page_title' );
       return $page_title;
-    
+
     }
-  
+
   } else {
     return $data;
   }
@@ -601,24 +601,24 @@ function dbem_admin_css() {
   }
   .switch-tab a:hover {
     color: #D54E21;
-    
-  } 
+
+  }
   #events-pagination {
-    text-align: center; 
-    
+    text-align: center;
+
   }
   #events-pagination a {
     margin: 0 20px 0 20px;
     text-decoration: none;
     width: 80px;
-    padding: 3px 0; 
+    padding: 3px 0;
     background: #FAF4B7;
     border: 1px solid #ccc;
     border-top: none;
-  } 
+  }
   #new-event {
     float: left;
-   
+
   }
   </style>";
   echo $css;
@@ -626,7 +626,7 @@ function dbem_admin_css() {
 
 add_action ( 'admin_print_scripts', 'dbem_admin_css' );
 
-// TEMPLATE TAGS   
+// TEMPLATE TAGS
 
 
 // exposed function, for theme  makers
@@ -636,7 +636,7 @@ function dbem_get_events_list($limit = "3", $scope = "future", $order = "ASC", $
   if (strpos ( $limit, "=" )) {
     // allows the use of arguments without breaking the legacy code
     $defaults = array ('limit' => 3, 'scope' => 'future', 'order' => 'ASC', 'format' => '', 'echo' => 1 , 'category' => '', $program_id = '');
-    
+
     $r = wp_parse_args ( $limit, $defaults );
     extract ( $r, EXTR_SKIP );
     $limit = $r ['limit'];
@@ -691,14 +691,14 @@ function dbem_get_events_page($justurl = 0, $echo = 1, $text = '') {
   if (strpos ( $justurl, "=" )) {
     // allows the use of arguments without breaking the legacy code
     $defaults = array ('justurl' => 0, 'text' => '', 'echo' => 1 );
-    
+
     $r = wp_parse_args ( $justurl, $defaults );
     extract ( $r, EXTR_SKIP );
     $justurl = $r ['justurl'];
     $text = $r ['text'];
     $echo = $r ['echo'];
   }
-  
+
   $page_link = get_permalink ( get_option ( "dbem_events_page" ) );
   if ($justurl) {
     $result = $page_link;
@@ -739,7 +739,7 @@ function dbem_are_events_available($scope = "future") {
   if ($scope == "")
     $scope = "future";
   $events = dbem_get_events ( 1, $scope );
-  
+
   if (empty ( $events ))
     return FALSE;
   else
@@ -766,7 +766,7 @@ function dbem_is_multiple_events_page() {
 function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset = "", $location_id = "", $category = '', $program_id = "") {
 /* Marcus End Edit */
   global $wpdb;
-  
+
   $events_table = $wpdb->prefix . EVENTS_TBNAME;
   if ($limit != "")
     $limit = "LIMIT $limit";
@@ -774,7 +774,7 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
     $offset = "OFFSET $offset";
   if ($order == "")
     $order = "ASC";
-  
+
   $timestamp = time ();
   $date_time_array = getdate ( $timestamp );
   $hours = $date_time_array ['hours'];
@@ -784,7 +784,7 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
   $day = $date_time_array ['mday'];
   $year = $date_time_array ['year'];
   $today = strftime ( '%Y-%m-%d', mktime ( $hours, $minutes, $seconds, $month, $day, $year ) );
-  
+
   $conditions = array ();
   if (preg_match ( "/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/", $scope )) {
     //$conditions [] = " event_start_date like '$scope'";
@@ -800,10 +800,10 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
     if ($scope == "past")
       $conditions [] = " event_start_date < '$today'";
   }
-  
+
   if ($location_id != "")
     $conditions [] = " location_id = $location_id";
-    
+
   /* Marcus Begin Edit */
   if ($category != '' && is_numeric($category)){
     $conditions [] = " event_category_id = $category";
@@ -816,16 +816,16 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
     $conditions [] = "(".implode(' OR', $category_conditions).")";
   }
   /* Marcus End Edit */
-  
+
   if ($program_id != "")
     $conditions [] = " event_program_id = $program_id";
-  
+
   $where = implode ( " AND ", $conditions );
   if ($where != "")
     $where = " WHERE " . $where;
-  
-  $sql = "SELECT event_id, 
-         event_name, 
+
+  $sql = "SELECT event_id,
+         event_name,
           DATE_FORMAT(event_start_time, '%e') AS 'event_day',
           DATE_FORMAT(event_start_time, '%Y') AS 'event_year',
           DATE_FORMAT(event_start_time, '%k') AS 'event_hh',
@@ -838,28 +838,28 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
         event_end_date,
         event_start_time,
         event_end_time,
-         event_notes, 
+         event_notes,
         event_rsvp,
-        recurrence_id, 
-        location_id, 
+        recurrence_id,
+        location_id,
         event_contactperson_id,
         event_attributes,
         event_program_id,
         event_contact,
         event_pay,
         event_personal_notes
-        FROM $events_table   
+        FROM $events_table
         $where
         ORDER BY event_start_date $order , event_start_time $order
-        $limit 
+        $limit
         $offset";
   $wpdb->show_errors = true;
   $events = $wpdb->get_results ( $sql, ARRAY_A );
   if (! empty ( $events )) {
-    //$wpdb->print_error(); 
+    //$wpdb->print_error();
     $inflated_events = array ();
     foreach ( $events as $this_event ) {
-      
+
       $this_location = dbem_get_location ( $this_event ['location_id'] );
       $this_event ['location_name'] = $this_location ['location_name'];
       $this_event ['location_address'] = $this_location ['location_address'];
@@ -880,24 +880,24 @@ function dbem_get_events($limit = "", $scope = "future", $order = "ASC", $offset
 function dbem_get_event($event_id) {
   global $wpdb;
   $events_table = $wpdb->prefix . EVENTS_TBNAME;
-  $sql = "SELECT event_id, 
-           event_name, 
-           DATE_FORMAT(event_start_date, '%Y-%m-%e') AS 'event_date', 
-          DATE_FORMAT(event_start_date, '%e') AS 'event_day',   
+  $sql = "SELECT event_id,
+           event_name,
+           DATE_FORMAT(event_start_date, '%Y-%m-%e') AS 'event_date',
+          DATE_FORMAT(event_start_date, '%e') AS 'event_day',
           DATE_FORMAT(event_start_date, '%m') AS 'event_month',
           DATE_FORMAT(event_start_date, '%Y') AS 'event_year',
           DATE_FORMAT(event_start_time, '%k') AS 'event_hh',
           DATE_FORMAT(event_start_time, '%i') AS 'event_mm',
-      DATE_FORMAT(event_start_time, '%h:%i%p') AS 'event_start_12h_time', 
-      DATE_FORMAT(event_start_time, '%H:%i') AS 'event_start_24h_time', 
-          DATE_FORMAT(event_end_time, '%Y-%m-%e') AS 'event_end_date', 
-          DATE_FORMAT(event_end_time, '%e') AS 'event_end_day',        
-          DATE_FORMAT(event_end_time, '%m') AS 'event_end_month',  
+      DATE_FORMAT(event_start_time, '%h:%i%p') AS 'event_start_12h_time',
+      DATE_FORMAT(event_start_time, '%H:%i') AS 'event_start_24h_time',
+          DATE_FORMAT(event_end_time, '%Y-%m-%e') AS 'event_end_date',
+          DATE_FORMAT(event_end_time, '%e') AS 'event_end_day',
+          DATE_FORMAT(event_end_time, '%m') AS 'event_end_month',
           DATE_FORMAT(event_end_time, '%Y') AS 'event_end_year',
           DATE_FORMAT(event_end_time, '%k') AS 'event_end_hh',
           DATE_FORMAT(event_end_time, '%i') AS 'event_end_mm',
-        DATE_FORMAT(event_end_time, '%h:%i%p') AS 'event_end_12h_time', 
-        DATE_FORMAT(event_end_time, '%H:%i') AS 'event_end_24h_time',   
+        DATE_FORMAT(event_end_time, '%h:%i%p') AS 'event_end_12h_time',
+        DATE_FORMAT(event_end_time, '%H:%i') AS 'event_end_24h_time',
           event_start_date,
           event_end_date,
           event_start_time,
@@ -905,7 +905,7 @@ function dbem_get_event($event_id) {
           event_notes,
           event_rsvp,
           event_seats,
-          recurrence_id, 
+          recurrence_id,
           location_id,
           event_contactperson_id,
           event_attributes,
@@ -913,9 +913,9 @@ function dbem_get_event($event_id) {
           event_contact,
           event_pay,
           event_personal_notes
-        FROM $events_table   
+        FROM $events_table
           WHERE event_id = $event_id";
-  
+
   //$wpdb->show_errors(true);
   $event = $wpdb->get_row ( $sql, ARRAY_A );
   //$wpdb->print_error();
@@ -936,7 +936,7 @@ function dbem_get_event($event_id) {
 
 function dbem_hello_to_new_user() {
   $current_user = wp_get_current_user ();
-  $advice = sprintf ( __ ( "<p>Hey, <strong>%s</strong>, welcome to <strong>Events Manager</strong>! We hope you like it around here.</p> 
+  $advice = sprintf ( __ ( "<p>Hey, <strong>%s</strong>, welcome to <strong>Events Manager</strong>! We hope you like it around here.</p>
   <p>Now it's time to insert events lists through  <a href='%s' title='Widgets page'>widgets</a>, <a href='%s' title='Template tags documentation'>template tags</a> or <a href='%s' title='Shortcodes documentation'>shortcodes</a>.</p>
   <p>By the way, have you taken a look at the <a href='%s' title='Change settings'>Settings page</a>? That's where you customize the way events and locations are displayed.</p>
   <p>What? Tired of seeing this advice? I hear you, <a href='%s' title='Don't show this advice again'>click here</a> and you won't see this again!</p>", 'dbem' ), $current_user->display_name, get_bloginfo ( 'url' ) . '/wp-admin/widgets.php', 'http://davidebenini.it/wordpress-plugins/events-manager#template-tags', 'http://davidebenini.it/wordpress-plugins/events-manager#shortcodes', get_bloginfo ( 'url' ) . '/wp-admin/admin.php?page=events-manager-options', get_bloginfo ( 'url' ) . '/wp-admin/admin.php?page=events-manager/events-manager.php&disable_hello_to_user=true' );
@@ -957,12 +957,12 @@ function dbem_events_table($events, $limit, $title) {
   if (($scope != "past") && ($scope != "all"))
     $scope = "future";
   $events_count = count ( dbem_get_events ( "", $scope ) );
-  
+
   if (isset ( $_GET ['offset'] ))
     $offset = $_GET ['offset'];
-  
+
   $use_events_end = get_option ( 'dbem_use_event_end' );
-  
+
   ?>
 
 <div class="wrap">
@@ -971,31 +971,31 @@ function dbem_events_table($events, $limit, $title) {
 <h2><?php
   echo $title;
   ?></h2>
-         
+
     <?php
   $say_hello = get_option ( 'dbem_hello_to_user' );
   if ($say_hello == 1)
     dbem_hello_to_new_user ();
-  
-  ?>   
+
+  ?>
     <!--<div id='new-event' class='switch-tab'><a href="<?php
   bloginfo ( 'wpurl' )?>/wp-admin/edit.php?page=events-manager/events-manager.php&amp;action=edit_event"><?php
   _e ( 'New Event ...', 'dbem' );
-  ?></a></div>-->  
+  ?></a></div>-->
     <?php
-  
+
   $link = array ();
   $link ['past'] = "<a href='" . get_bloginfo ( 'url' ) . "/wp-admin/edit.php?page=events-manager/events-manager.php&amp;scope=past&amp;order=desc'>" . __ ( 'Past events', 'dbem' ) . "</a>";
   $link ['all'] = " <a href='" . get_bloginfo ( 'url' ) . "/wp-admin/edit.php?page=events-manager/events-manager.php&amp;scope=all&amp;order=desc'>" . __ ( 'All events', 'dbem' ) . "</a>";
   $link ['future'] = "  <a href='" . get_bloginfo ( 'url' ) . "/wp-admin/edit.php?page=events-manager/events-manager.php&amp;scope=future'>" . __ ( 'Future events', 'dbem' ) . "</a>";
-  
+
   $scope_names = array ();
   $scope_names ['past'] = __ ( 'Past events', 'dbem' );
   $scope_names ['all'] = __ ( 'All events', 'dbem' );
   $scope_names ['future'] = __ ( 'Future events', 'dbem' );
-  
-  ?> 
-    
+
+  ?>
+
         <form id="posts-filter" action="" method="get"><input type='hidden'
   name='page' value='events-manager/events-manager.php' />
 <ul class="subsubsub">
@@ -1023,7 +1023,7 @@ function dbem_events_table($events, $limit, $title) {
   ?>"
   name="doaction2" id="doaction2" class="button-secondary action" /> <select
   name="scope">
-  
+
           <?php
   foreach ( $scope_names as $key => $value ) {
     $selected = "";
@@ -1042,7 +1042,7 @@ function dbem_events_table($events, $limit, $title) {
     echo "no events";
   } else {
     ?>
-    
+
   <table class="widefat">
   <thead>
     <tr>
@@ -1071,9 +1071,9 @@ function dbem_events_table($events, $limit, $title) {
       $localised_date = mysql2date ( __ ( 'D d M Y' ), $event ['event_start_date'] );
       $style = "";
       $today = date ( "Y-m-d" );
-      
+
       $location_summary = "<b>" . $event ['location_name'] . "</b><br/>" . $event ['location_address'] . " - " . $event ['location_town'];
-      
+
       if ($event ['event_start_date'] < $today)
         $style = "style ='background-color: #FADDB7;'";
       ?>
@@ -1096,7 +1096,7 @@ function dbem_events_table($events, $limit, $title) {
       $category = dbem_get_category($event ['event_id']);
       if($category)
         echo "<br/><span title='".__ ( 'Category', 'dbem' ).": ".$category['category_name']."'>".$category['category_name']."</span>";
-      ?> 
+      ?>
       </td>
       <td>
           <?php /* Marcus Begin Edit */      ?>
@@ -1111,18 +1111,18 @@ function dbem_events_table($events, $limit, $title) {
           <?php /* Marcus End Edit */      ?>
        </td>
       <td>
-     
+
          <?php
       echo $location_summary;
       ?>
-        
+
        </td>
 
       <td>
          <?php
       echo $localised_date;
       ?><br />
-        
+
          <?php
       echo substr ( $event ['event_start_time'], 0, 5 ) . " - " . substr ( $event ['event_end_time'], 0, 5 );
       ?>
@@ -1132,7 +1132,7 @@ function dbem_events_table($events, $limit, $title) {
       if ($event ['recurrence_id']) {
         $recurrence = dbem_get_recurrence ( $event [recurrence_id] );
         ?>
-            
+
                 <b><?php
         echo $recurrence ['recurrence_description'];
         ?> <br />
@@ -1143,26 +1143,26 @@ function dbem_events_table($events, $limit, $title) {
         ?>"><?php
         _e ( 'Reschedule', 'dbem' );
         ?></a></b>
-                
-                 
+
+
                <?php
       }
       ?>
         </td>
-   
-     
+
+
   <?php
       echo '</tr>';
       $i ++;
     }
     ?>
-     
-      
-  
-  
-  
+
+
+
+
+
   </tbody>
-</table>  
+</table>
   <?php
   } // end of table  ?>
 
@@ -1195,24 +1195,24 @@ function dbem_events_table($events, $limit, $title) {
 <?php
 }
 function dbem_event_form($event, $title, $element) {
-  
+
   global $localised_date_formats;
   // change prefix according to event/recurrence
   $_GET ['action'] == "edit_recurrence" ? $pref = "recurrence_" : $pref = "event_";
-  
+
   $_GET ['action'] == "edit_recurrence" ? $form_destination = "edit.php?page=events-manager/events-manager.php&amp;action=update_recurrence&amp;recurrence_id=" . $element : $form_destination = "edit.php?page=events-manager/events-manager.php&amp;action=update_event&amp;event_id=" . $element;
-  
+
   $locale_code = substr ( get_locale (), 0, 2 );
   $localised_date_format = $localised_date_formats [$locale_code];
-  
+
   $hours_locale = "24";
   // Setting 12 hours format for those countries using it
   if (preg_match ( "/en|sk|zh|us|uk/", $locale_code ))
     $hours_locale = "12";
-  
+
   $localised_example = str_replace ( "yy", "2008", str_replace ( "mm", "11", str_replace ( "dd", "28", $localised_date_format ) ) );
   $localised_end_example = str_replace ( "yy", "2008", str_replace ( "mm", "11", str_replace ( "dd", "28", $localised_date_format ) ) );
-  
+
   if ($event [$pref . 'start_date'] != "") {
     preg_match ( "/(\d{4})-(\d{2})-(\d{2})/", $event [$pref . 'start_date'], $matches );
     $year = $matches [1];
@@ -1232,16 +1232,16 @@ function dbem_event_form($event, $title, $element) {
     $localised_end_date = "";
   }
   // if($event[$pref.'rsvp'])
-  //   echo (dbem_bookings_table($event[$pref.'id']));      
-  
+  //   echo (dbem_bookings_table($event[$pref.'id']));
+
 
   $freq_options = array ("daily" => __ ( 'Daily', 'dbem' ), "weekly" => __ ( 'Weekly', 'dbem' ), "monthly" => __ ( 'Monthly', 'dbem' ) );
   $days_names = array (1 => __ ( 'Mon' ), 2 => __ ( 'Tue' ), 3 => __ ( 'Wed' ), 4 => __ ( 'Thu' ), 5 => __ ( 'Fri' ), 6 => __ ( 'Sat' ), 7 => __ ( 'Sun' ) );
   $saved_bydays = explode ( ",", $event ['recurrence_byday'] );
   $weekno_options = array ("1" => __ ( 'first', 'dbem' ), '2' => __ ( 'second', 'dbem' ), '3' => __ ( 'third', 'dbem' ), '4' => __ ( 'fourth', 'dbem' ), '-1' => __ ( 'last', 'dbem' ) );
-  
+
   $event [$pref . 'rsvp'] ? $event_RSVP_checked = "checked='checked'" : $event_RSVP_checked = '';
-  
+
   ?>
   <form id="eventForm" method="post"   action="<?php echo $form_destination; ?>">
     <div class="wrap">
@@ -1257,7 +1257,7 @@ function dbem_event_form($event, $title, $element) {
         <br />
         <?php
             _e ( 'Modifying these data all the events linked to this recurrence will be rescheduled', 'dbem' );
-          
+
           } else {
             _e ( 'WARNING: This is a recurring event.', 'dbem' );
             _e ( 'If you change these data and save, this will become an independent event.', 'dbem' );
@@ -1291,7 +1291,7 @@ function dbem_event_form($event, $title, $element) {
                 <?php
       if ($event ['recurrence_id'] != "")
         $recurrence_YES = "checked='checked'";
-      
+
       ?>
                 <p>
                   <input id="event-recurrence" type="checkbox"
@@ -1357,11 +1357,11 @@ function dbem_event_form($event, $title, $element) {
                 </p>
                 <?php
     } else {
-      
+
       if (! $event ['recurrence_id']) {
         echo "<p>" . __ ( 'This is\'t a recurrent event', 'dbem' ) . ".</p>";
       } else {
-        
+
         $recurrence = dbem_get_recurrence ( $event ['recurrence_id'] );
         ?>
                 <p>
@@ -1707,7 +1707,7 @@ function dbem_event_form($event, $title, $element) {
               </div>
             </div>
             <?php/* Marcus End Edit */ ?>
-          
+
             <div id="event_contact" class="stuffbox">
               <h3>Contact</h3>
               <div class="inside">
@@ -1716,7 +1716,7 @@ function dbem_event_form($event, $title, $element) {
                 Contact name and phone (or email address) for events that require asking permission to attend. Example: Joe Friday 206-555-1212."
               </div>
             </div>
-            
+
             <div id="archival_information" class="stuffbox">
               <h3>Archival Information</h3>
               <div class="inside">
@@ -1730,7 +1730,7 @@ function dbem_event_form($event, $title, $element) {
                 </p>
               </div>
             </div>
-            
+
           </div>
           <p class="submit">
             <input type="submit" name="events_update"
@@ -1775,7 +1775,7 @@ function _dbem_is_date_valid($date) {
 }
 function _dbem_is_time_valid($time) {
   $result = preg_match ( "/([01]\d|2[0-3])(:[0-5]\d)/", $time );
-  
+
   return ($result);
 }
 // Enqueing jQuery script to make sure it's loaded
@@ -1786,7 +1786,7 @@ function dbem_enque_scripts() {
 add_action ( 'template_redirect', 'dbem_enque_scripts' );
 
 function url_exists($url) {
-  
+
   if ((strpos ( $url, "http" )) === false)
     $url = "http://" . $url;
     // FIXME ripristina la linea seguente e VEDI DI SISTEMARE!!!!
@@ -1814,17 +1814,17 @@ function dbem_admin_general_script() {
   src="<?php
   bloginfo ( 'url' );
   ?>/wp-content/plugins/events-manager/js/timeentry/jquery.timeentry.js"
-  type="text/javascript"></script>   
+  type="text/javascript"></script>
 <?php
-  
+
   // Check if the locale is there and loads it
   $locale_code = substr ( get_locale (), 0, 2 );
-  
+
   $show24Hours = 'true';
   // Setting 12 hours format for those countries using it
   if (preg_match ( "/en|sk|zh|us|uk/", $locale_code ))
     $show24Hours = 'false';
-  
+
   $locale_file = get_bloginfo ( 'url' ) . "/wp-content/plugins/events-manager/js/jquery-ui-datepicker/i18n/ui.datepicker-$locale_code.js";
   if (url_exists ( $locale_file )) {
     ?>
@@ -1848,11 +1848,11 @@ function dbem_admin_general_script() {
   ;
 </style>
 <script type="text/javascript">
-   //<![CDATA[        
+   //<![CDATA[
    // TODO: make more general, to support also latitude and longitude (when added)
-$j=jQuery.noConflict();   
+$j=jQuery.noConflict();
 
-function updateIntervalDescriptor () { 
+function updateIntervalDescriptor () {
   $j(".interval-desc").hide();
   var number = "-plural";
   if ($j('input#recurrence-interval').val() == 1 || $j('input#recurrence-interval').val() == "")
@@ -1861,7 +1861,7 @@ function updateIntervalDescriptor () {
   $j(descriptor).show();
 }
 function updateIntervalSelectors () {
-  $j('p.alternate-selector').hide();   
+  $j('p.alternate-selector').hide();
   $j('p#'+ $j('select#recurrence-frequency').val() + "-selector").show();
   //$j('p.recurrence-tip').hide();
   //$j('p#'+ $j(this).val() + "-tip").show();
@@ -1872,20 +1872,20 @@ function updateShowHideRecurrence () {
     /* Marcus Begin Edit */
     //Edited this and the one below so dates always can have an end date
     //$j("input#localised-end-date").fadeIn();
-    /* Marcus End Edit */ 
+    /* Marcus End Edit */
     $j("#event-date-explanation").hide();
     $j("#recurrence-dates-explanation").show();
     $j("h3#recurrence-dates-title").show();
-    $j("h3#event-date-title").hide();     
+    $j("h3#event-date-title").hide();
   } else {
     $j("#event_recurrence_pattern").hide();
     /* Marcus Begin Edit */
     //$j("input#localised-end-date").hide();
-    /* Marcus End Edit */ 
+    /* Marcus End Edit */
     $j("#recurrence-dates-explanation").hide();
     $j("#event-date-explanation").show();
     $j("h3#recurrence-dates-title").hide();
-    $j("h3#event-date-title").show();   
+    $j("h3#event-date-title").show();
   }
 }
 
@@ -1899,7 +1899,7 @@ function updateShowHideRsvp () {
 
 $j(document).ready( function() {
   locale_format = "ciao";
- 
+
   $j("#recurrence-dates-explanation").hide();
   $j("#localised-date").show();
   /* Marcus Begin Edit */
@@ -1907,21 +1907,21 @@ $j(document).ready( function() {
   /* Marcus End Edit */
 
   $j("#date-to-submit").hide();
-  $j("#end-date-to-submit").hide(); 
+  $j("#end-date-to-submit").hide();
   $j("#localised-date").datepicker($j.extend({},
-    ($j.datepicker.regional["it"], 
-    {altField: "#date-to-submit", 
+    ($j.datepicker.regional["it"],
+    {altField: "#date-to-submit",
     altFormat: "yy-mm-dd"})));
   $j("#localised-end-date").datepicker($j.extend({},
-    ($j.datepicker.regional["it"], 
-    {altField: "#end-date-to-submit", 
+    ($j.datepicker.regional["it"],
+    {altField: "#end-date-to-submit",
     altFormat: "yy-mm-dd"})));
 
 
 
 
 
-  
+
    $j("#start-time").timeEntry({spinnerImage: '', show24Hours: <?php
   echo $show24Hours;
   ?> });
@@ -1938,43 +1938,43 @@ $j(document).ready( function() {
      $j('input.row-selector').attr('checked', true);
      else
      $j('input.row-selector').attr('checked', false);
-  }); 
+  });
   // TODO: NOT WORKING FOR SOME REASON, val() gives me 2 instead of 'smtp'...
   // console.log($j('select[name:dbem_rsvp_mail_send_method]').val());
   //   if ($j('select[name:dbem_rsvp_mail_send_method]').val() != "smtp") {
   //      $j('tr#dbem_smtp_host_row').hide();
   //     $j('tr#dbem_rsvp_mail_SMTPAuth_row').hide();
-  //      $j('tr#dbem_smtp_username_row').hide(); 
+  //      $j('tr#dbem_smtp_username_row').hide();
   //      $j('tr#dbem_smtp_password_row').hide();
-  //    }    
-  //     
+  //    }
+  //
   //    $j('select[name:dbem_rsvp_mail_send_method]').change(function() {
-  //      console.log($j(this).val()); 
+  //      console.log($j(this).val());
   //      if($j(this).val() == "smtp") {
-  //        $j('tr#dbem_smtp_host_row').show();   
+  //        $j('tr#dbem_smtp_host_row').show();
   //       $j('tr#dbem_rsvp_mail_SMTPAuth_row').show();
-  //        $j('tr#dbem_smtp_username_row').show(); 
-  //        $j('tr#dbem_smtp_password_row').show(); 
+  //        $j('tr#dbem_smtp_username_row').show();
+  //        $j('tr#dbem_smtp_password_row').show();
   //      } else {
   //        $j('tr#dbem_smtp_host_row').hide();
   //       $j('tr#dbem_rsvp_mail_SMTPAuth_row').hide();
-  //        $j('tr#dbem_smtp_username_row').hide(); 
+  //        $j('tr#dbem_smtp_username_row').hide();
   //        $j('tr#dbem_smtp_password_row').hide();
-  //      }                                                 
-    
+  //      }
+
    //});
-   updateIntervalDescriptor(); 
+   updateIntervalDescriptor();
    updateIntervalSelectors();
-   updateShowHideRecurrence();  
+   updateShowHideRecurrence();
    updateShowHideRsvp();
-   $j('input#event-recurrence').change(updateShowHideRecurrence);  
-   $j('input#rsvp-checkbox').change(updateShowHideRsvp);   
-   // recurrency elements   
+   $j('input#event-recurrence').change(updateShowHideRecurrence);
+   $j('input#rsvp-checkbox').change(updateShowHideRsvp);
+   // recurrency elements
    $j('input#recurrence-interval').keyup(updateIntervalDescriptor);
    $j('select#recurrence-frequency').change(updateIntervalDescriptor);
    $j('select#recurrence-frequency').change(updateIntervalSelectors);
-    
-   // hiding or showing notes according to their content  
+
+   // hiding or showing notes according to their content
    jQuery('.postbox h3').prepend('<a class="togbox">+</a> ');
    //         if(jQuery("textarea[@name=event_notes]").val()!="") {
      //    jQuery("textarea[@name=event_notes]").parent().parent().removeClass('closed');
@@ -1994,7 +1994,7 @@ $j(document).ready( function() {
   _e ( 'Location', 'dbem' )?>",'location_address':"<?php
   _e ( 'Address', 'dbem' )?>",'location_town':"<?php
   _e ( 'Town', 'dbem' )?>"};
-    
+
     missingFields = new Array;
     for (var i in requiredFields) {
       if ($j("input[@name=" + requiredFields[i]+ "]").val() == 0) {
@@ -2002,20 +2002,20 @@ $j(document).ready( function() {
         $j("input[@name=" + requiredFields[i]+ "]").css('border','2px solid red');
       } else {
         $j("input[@name=" + requiredFields[i]+ "]").css('border','1px solid #DFDFDF');
-        
+
       }
-        
+
        }
-  
-    //   alert('ciao ' + recurring+ " end: " + $j("input[@name=localised_event_end_date]").val());     
+
+    //   alert('ciao ' + recurring+ " end: " + $j("input[@name=localised_event_end_date]").val());
        if (missingFields.length > 0) {
-  
+
         errors = "<?php
   echo _e ( 'Some required fields are missing:', 'dbem' )?> " + missingFields.join(", ") + ".\n";
     }
     if(recurring && $j("input[@name=localised_event_end_date]").val() == "") {
       errors = errors +  "<?php
-  _e ( 'Since the event is repeated, you must specify an end date', 'dbem' )?>."; 
+  _e ( 'Since the event is repeated, you must specify an end date', 'dbem' )?>.";
       $j("input[@name=localised_event_end_date]").css('border','2px solid red');
     } else {
       $j("input[@name=localised_event_end_date]").css('border','1px solid #DFDFDF');
@@ -2024,12 +2024,12 @@ $j(document).ready( function() {
       alert(errors);
       return false;
     }
-    return true; 
+    return true;
    }
-   
+
    $j('#eventForm').bind("submit", validateEventForm);
-     
-  
+
+
 });
 //]]>
 </script>
@@ -2040,12 +2040,12 @@ $j(document).ready( function() {
 function dbem_admin_map_script() {
   if ((isset ( $_REQUEST ['event_id'] ) && $_REQUEST ['event_id'] != '') || (isset ( $_REQUEST ['page'] ) && $_REQUEST ['page'] == 'locations') || (isset ( $_REQUEST ['page'] ) && $_REQUEST ['page'] == 'new_event') || (isset ( $_REQUEST ['action'] ) && $_REQUEST ['action'] == 'edit_recurrence')) {
     if (! (isset ( $_REQUEST ['action'] ) && $_REQUEST ['action'] == 'dbem_delete')) {
-      // single event page    
-      
+      // single event page
+
 
       $event_ID = $_REQUEST ['event_id'];
       $event = dbem_get_event ( $event_ID );
-      
+
       if ($event ['location_town'] != '' || (isset ( $_REQUEST ['page'] ) && $_REQUEST ['page'] = 'locations')) {
         $gmap_key = get_option ( 'dbem_gmap_key' );
         if ($event ['location_address'] != "") {
@@ -2053,7 +2053,7 @@ function dbem_admin_map_script() {
         } else {
           $search_key = $event ['location_name'] . ", " . $event ['location_town'];
         }
-        
+
         ?>
 <style type="text/css">
 /* div#location_town, div#location_address, div#location_name {
@@ -2071,19 +2071,19 @@ function dbem_admin_map_script() {
 <script type="text/javascript">
       //<![CDATA[
          $j=jQuery.noConflict();
-    
+
       function loadMap(location, town, address) {
             if (GBrowserIsCompatible()) {
               var map = new GMap2(document.getElementById("event-map"));
-            //  map.addControl(new GScaleControl()); 
-              //map.setCenter(new GLatLng(37.4419, -122.1419), 13);   
+            //  map.addControl(new GScaleControl());
+              //map.setCenter(new GLatLng(37.4419, -122.1419), 13);
           var geocoder = new GClientGeocoder();
           if (address !="") {
             searchKey = address + ", " + town;
           } else {
             searchKey =  location + ", " + town;
           }
-          
+
           var search = "<?php
         echo $search_key?>" ;
           geocoder.getLatLng(
@@ -2097,53 +2097,53 @@ function dbem_admin_map_script() {
                 map.setCenter(mapCenter, 13);
                   var marker = new GMarker(point);
                   map.addOverlay(marker);
-                  marker.openInfoWindowHtml('<strong>' + location +'</strong><p>' + address + '</p><p>' + town + '</p>'); 
+                  marker.openInfoWindowHtml('<strong>' + location +'</strong><p>' + address + '</p><p>' + town + '</p>');
               $j('input#location-latitude').val(point.y);
-              $j('input#location-longitude').val(point.x);   
+              $j('input#location-longitude').val(point.x);
               $j("#event-map").show();
               $j('#map-not-found').hide();
               }
               }
-            );   
+            );
            //  map.addControl(new GSmallMapControl());
            // map.addControl(new GMapTypeControl());
-          
+
            }
         }
-   
+
       $j(document).ready(function() {
-        eventLocation = $j("input#location-name").val(); 
-        eventTown = $j("input#location-town").val(); 
+        eventLocation = $j("input#location-name").val();
+        eventTown = $j("input#location-town").val();
         eventAddress = $j("input#location-address").val();
-       
+
         loadMap(eventLocation, eventTown, eventAddress);
-      
+
         $j("input#location-name").blur(function(){
-            newEventLocation = $j("input#location-name").val();  
-            if (newEventLocation !=eventLocation) {                
-              loadMap(newEventLocation, eventTown, eventAddress); 
+            newEventLocation = $j("input#location-name").val();
+            if (newEventLocation !=eventLocation) {
+              loadMap(newEventLocation, eventTown, eventAddress);
               eventLocation = newEventLocation;
-             
+
             }
         });
         $j("input#location-town").blur(function(){
-            newEventTown = $j("input#location-town").val(); 
-            if (newEventTown !=eventTown) {  
-              loadMap(eventLocation, newEventTown, eventAddress); 
+            newEventTown = $j("input#location-town").val();
+            if (newEventTown !=eventTown) {
+              loadMap(eventLocation, newEventTown, eventAddress);
               eventTown = newEventTown;
-              } 
+              }
         });
         $j("input#location-address").blur(function(){
-            newEventAddress = $j("input#location-address").val(); 
+            newEventAddress = $j("input#location-address").val();
             if (newEventAddress != eventAddress) {
               loadMap(eventLocation, eventTown, newEventAddress);
-               eventAddress = newEventAddress; 
+               eventAddress = newEventAddress;
             }
         });
-        
-      
-     
-       }); 
+
+
+
+       });
        $j(document).unload(function() {
         GUnload();
        });
@@ -2167,9 +2167,9 @@ function dbem_admin_options_script() {
 <script type="text/javascript">
   //<![CDATA[
     $j=jQuery.noConflict();
-     
-     $j(document).ready(function() {   
-        
+
+     $j(document).ready(function() {
+
         // users cannot enable Google Maps without an api key
         function verifyOptionsForm(){
              var gmap_is_active = $j("input[@name=dbem_gmap_is_active]:checked").val();
@@ -2179,24 +2179,24 @@ function dbem_admin_options_script() {
     _e ( 'You cannot enable Google Maps integration without setting an appropriate API key.' );
     ?>");
               $j("input[@name='dbem_gmap_is_active']:nth(1)").attr("checked","checked");
-          
+
             return false;
           } else {
             return true;
           }
         }
-        
+
         $j('#dbem_options_form').bind("submit", verifyOptionsForm);
 
 
        });
-  
-    
+
+
     //]]>
   </script>
 
 <?php
-  
+
   }
 
 }
@@ -2206,7 +2206,7 @@ function dbem_rss_link($justurl = 0, $echo = 1, $text = "RSS") {
   if (strpos ( $justurl, "=" )) {
     // allows the use of arguments without breaking the legacy code
     $defaults = array ('justurl' => 0, 'echo' => 1, 'text' => 'RSS' );
-    
+
     $r = wp_parse_args ( $justurl, $defaults );
     extract ( $r, EXTR_SKIP );
     $justurl = $r ['justurl'];
@@ -2218,7 +2218,7 @@ function dbem_rss_link($justurl = 0, $echo = 1, $text = "RSS") {
   $rss_title = get_option ( 'dbem_events_page_title' );
   $url = get_bloginfo ( 'url' ) . "/?dbem_rss=main";
   $link = "<a href='$url'>$text</a>";
-  
+
   if ($justurl)
     $result = $url;
   else
@@ -2240,14 +2240,14 @@ function dbem_rss() {
   if (isset ( $_REQUEST ['dbem_rss'] ) && $_REQUEST ['dbem_rss'] == 'main') {
     header ( "Content-type: text/xml" );
     echo "<?xml version='1.0'?>\n";
-    
+
     $events_page_id = get_option ( 'dbem_events_page' );
     $events_page_link = get_permalink ( $events_page_id );
     if (stristr ( $events_page_link, "?" ))
       $joiner = "&amp;";
     else
       $joiner = "?";
-    
+
     ?>
 <rss version="2.0">
 <channel>
@@ -2353,7 +2353,7 @@ function dbem_tinymce(){
   add_thickbox();
   wp_enqueue_script('media-upload');
   wp_enqueue_script('word-count');
-  wp_enqueue_script('quicktags');  
+  wp_enqueue_script('quicktags');
 }
 add_action ( 'admin_init', 'dbem_tinymce' );
 /* Marcus End Edit */
