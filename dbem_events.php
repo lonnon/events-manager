@@ -262,6 +262,17 @@ function dbem_get_all_pages() {
   return $output;
 }
 
+function dbem_get_program_pages() {
+  global $wpdb;
+  $query = "SELECT id, post_title FROM " . $wpdb->prefix . "posts WHERE post_type = 'page' AND post_parent in (13, 46, 61, 68) ORDER BY post_title ASC;";
+  $pages = $wpdb->get_results ( $query, ARRAY_A );
+  $output = array ();
+  foreach ( $pages as $page ) {
+    $output [$page ['id']] = $page ['post_title'];
+  }
+  return $output;
+}
+
 // Function composing the options subpanel
 function dbem_options_subpanel() {
   // dbem_options_register();
@@ -1508,7 +1519,7 @@ function dbem_event_form($event, $title, $element) {
                   <select name="event_program_id">
                     <option value="">Custom Program</option>
                     <?php
-                      $programs = dbem_get_all_pages();
+                      $programs = dbem_get_program_pages();
                       foreach ($programs as $id => $name) {
                         $selected = $id == $event['event_program_id'] ? "selected='selected'" : '';
                     ?>
@@ -1525,6 +1536,12 @@ function dbem_event_form($event, $title, $element) {
                 <p>
                   <label for="event_custom_program">Custom Program Title:</label><br />
                   <input type="text" name="event_custom_program" id="event_custom_program" rows="5" value="<?php echo $event['event_custom_program'] ?>"/>
+                </p>
+                <p>
+                  If a program is selected in the dropdown, the Custom Program Title is ignored. If Custom Program is selected in the dropdown and Custom Program Title is empty, the default "Program to be announced" text is displayed on the site.
+                </p>
+                <p>
+                  The Custom Program Title appears in the sidebar of the home page and on the Upcoming Events page. If you want a longer description of the custom event, write it in the Details section further down this page, and it shows up on the individual event page for this event.
                 </p>
               </div>
             </div>
